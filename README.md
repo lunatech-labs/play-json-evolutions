@@ -66,10 +66,10 @@ If you now try to deserialize the JSON of an existing user, it will fail because
 
     object User {
       val userFormat = Json.format[User].withEvolutions(
-        1 -> Transformers.add("role" -> "member"))
+        1 -> Transformers.add("role", JsString("member")))
     }
 
-Now, the userFormat will write teh following JSON, when serializing `User("Erik", "member")`:
+Now, the userFormat will write the following JSON, when serializing `User("Erik", "member")`:
 
     { "name" : "Erik", "role" : "member", "_version" : 1 }
 
