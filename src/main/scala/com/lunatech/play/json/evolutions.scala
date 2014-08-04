@@ -5,42 +5,55 @@ import play.api.libs.json.Reads.OptionReads
 
 object evolutions {
 
-  type Transform = Reads[_ <: JsObject]
-  type Evolution = (Int, Transform)
+  type Transformation = Reads[_ <: JsObject]
+  type Evolution = (Int, Transformation)
 
   implicit class RichFormat[T](format: Format[T]) {
+
+    def error() = sys.error("Can only apply evolutions to `JsObject` instances")
 
     def withEvolutions(evolutions: Evolution*): Format[T] =
       if (evolutions.isEmpty) format
       else new Format[T] {
-        val newest = evolutions.map { case (i, _) => i }.max
+        val utilities = new EvolutionUtilities(evolutions)
 
-        override def writes(o: T) = writeVersion(format.writes(o), newest)
-        override def reads(json: JsValue) = upgrade(json, evolutions) flatMap { format.reads }
+        override def writes(o: T) = format.writes(o) match {
+          case obj: JsObject => utilities writeLatestVersionTo obj
+          case _ => error()
+        }
+
+        override def reads(json: JsValue) = json match {
+          case obj: JsObject => utilities upgrade obj flatMap format.reads
+          case _ => error()
+        }
       }
-
-    private def writeVersion(json: JsValue, version: Int) = json match {
-      case o: JsObject => o + ("_version" -> JsNumber(version))
-      case other => sys.error("Oh noes!") // TODO, better error
-    }
-
-    private def upgrade(json: JsValue, evolutions: Seq[Evolution]): JsResult[JsValue] =
-      for {
-        jsonVersion <- (json \ "_version").validate[Option[Int]]
-        transforms <- applicableTransforms(evolutions, jsonVersion)
-        upgraded <- applyTransforms(json, transforms)
-      } yield upgraded
-
-    private def applicableTransforms(evolutions: Seq[Evolution], jsonVersion: Option[Int]): JsResult[Seq[Transform]] = {
-      val documentVersion = jsonVersion getOrElse 0
-      JsSuccess(evolutions collect { case (nr, evolution) if nr > documentVersion => evolution })
-    }
-
-    private def applyTransforms(json: JsValue, transforms: Seq[Transform]): JsResult[JsValue] =
-      transforms.foldLeft[JsResult[JsValue]](JsSuccess(json)) {
-        case (json, transform) => json flatMap { _.transform(transform) }
-      }
-
   }
 
+  class EvolutionUtilities(evolutions: Seq[Evolution]) {
+    private val sortedEvolutions = evolutions.sortBy { case (version, _) => version }
+    private val (latestVersion, _) = sortedEvolutions.lastOption.getOrElse(0 -> null)
+
+    def writeLatestVersionTo(o: JsObject) =
+      o + ("_version" -> JsNumber(latestVersion))
+
+    def upgrade(json: JsObject) =
+      for {
+        jsonVersion <- (json \ "_version").validate[Option[Int]]
+        transformations <- applicableTransformations(jsonVersion)
+        upgraded <- applyTransformations(json, transformations)
+      } yield upgraded
+
+    private def applicableTransformations(jsonVersion: Option[Int]): JsResult[Seq[Transformation]] = {
+      val documentVersion = jsonVersion getOrElse 0
+      val applicableTransformations = sortedEvolutions collect {
+        case (version, evolution) if version > documentVersion => evolution
+      }
+      JsSuccess(applicableTransformations)
+    }
+
+    private def applyTransformations(json: JsValue, transformations: Seq[Transformation]): JsResult[JsValue] =
+      transformations.foldLeft[JsResult[JsValue]](JsSuccess(json)) {
+        case (json, transform) => json flatMap { _.transform(transform) }
+      }
+  }
 }

@@ -4,11 +4,15 @@ name := "play-json-evolutions"
 
 version := "0.1.0"
 
+scalaVersion := "2.11.1"
+
+crossScalaVersions in ThisBuild := Seq("2.10.4", "2.11.1")
+
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  "play" %% "play" % "2.1.3" % "provided",
-  "org.specs2" %% "specs2" % "2.3.7" % "test")
+  "com.typesafe.play" %% "play-json" % "2.3.0" % "provided",
+  "org.specs2" %% "specs2" % "2.4" % "test")
 
 publishTo <<= version { (v: String) =>
   val path = if(v.trim.endsWith("SNAPSHOT")) "snapshots-public" else "releases-public"
