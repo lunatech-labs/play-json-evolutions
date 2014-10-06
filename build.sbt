@@ -2,13 +2,19 @@ organization := "com.lunatech"
 
 name := "play-json-evolutions"
 
-version := "0.1.0"
+version := "0.1.2"
 
-resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+scalaVersion := "2.11.2"
+
+crossScalaVersions := Seq("2.10.4", "2.11.2")
+
+resolvers ++= Seq(
+  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+  "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases")
 
 libraryDependencies ++= Seq(
-  "play" %% "play" % "2.1.3" % "provided",
-  "org.specs2" %% "specs2" % "2.3.7" % "test")
+  "com.typesafe.play" %% "play" % "2.3.0" % "provided",
+  "org.specs2" %% "specs2" % "2.4.5" % "test")
 
 publishTo <<= version { (v: String) =>
   val path = if(v.trim.endsWith("SNAPSHOT")) "snapshots-public" else "releases-public"
@@ -21,6 +27,6 @@ site.includeScaladoc()
 
 ghpages.settings
 
-git.remoteRepo := "git@github.com:lunatech-labs/play2-activiti.git"
+git.remoteRepo := "git@github.com:lunatech-labs/play-json-evolutions.git"
 
 releaseSettings
