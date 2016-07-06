@@ -1,18 +1,17 @@
 package com.lunatech.play.json
 
-import play.api.libs.json.{ Format, JsNumber, JsObject, JsResult, JsSuccess, JsValue, Reads }
-import play.api.libs.json.Reads.OptionReads
+import play.api.libs.json._
 
 object evolutions {
 
   type Transform = Reads[_ <: JsObject]
   type Evolution = (Int, Transform)
 
-  implicit class RichFormat[T](format: Format[T]) {
+  implicit class RichFormat[T](format: OFormat[T]) {
 
-    def withEvolutions(evolutions: Evolution*): Format[T] =
+    def withEvolutions(evolutions: Evolution*): OFormat[T] =
       if (evolutions.isEmpty) format
-      else new Format[T] {
+      else new OFormat[T] {
         val newest = evolutions.map { case (i, _) => i }.max
 
         override def writes(o: T) = writeVersion(format.writes(o), newest)
@@ -26,7 +25,7 @@ object evolutions {
 
     private def upgrade(json: JsValue, evolutions: Seq[Evolution]): JsResult[JsValue] =
       for {
-        jsonVersion <- (json \ "_version").validate[Option[Int]]
+        jsonVersion <- (json \ "_version").validateOpt[Int]
         transforms <- applicableTransforms(evolutions, jsonVersion)
         upgraded <- applyTransforms(json, transforms)
       } yield upgraded

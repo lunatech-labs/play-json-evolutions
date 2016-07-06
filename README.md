@@ -25,6 +25,7 @@ Versions
 
 Version 0.1.0 is built for Play 2.1.x
 Version 0.1.2 is built for Play 2.3.x, both Scala 2.10 and 2.11
+Version 0.1.3 is built for Play 2.5.x, both Scala 2.10 and 2.11
 
 Suggested use cases
 ===================
