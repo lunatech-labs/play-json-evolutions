@@ -1,12 +1,9 @@
 package controllers
 
-import org.specs2.mutable.Specification
-import com.lunatech.play.json.evolutions.RichFormat
-import play.api.libs.functional.syntax.toInvariantFunctorOps
-import play.api.libs.json.{ Json, Reads }
 import com.lunatech.play.json.Transformers
-import play.api.libs.json.JsString
-import play.api.libs.json.JsNumber
+import com.lunatech.play.json.evolutions.RichFormat
+import org.specs2.mutable.Specification
+import play.api.libs.json.{JsNumber, Json, Reads}
 
 class EvolutionsSpec extends Specification {
 

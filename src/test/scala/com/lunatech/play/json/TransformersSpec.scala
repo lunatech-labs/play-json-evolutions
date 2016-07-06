@@ -1,9 +1,6 @@
-import org.specs2.mutable.Specification
-import play.api.libs.json.Json
 import com.lunatech.play.json.Transformers
-import play.api.libs.json.JsString
-import play.api.libs.json.__
-import play.api.libs.json.JsObject
+import org.specs2.mutable.Specification
+import play.api.libs.json.{JsObject, JsString, Json, __}
 
 class TransformerSpec extends Specification {
 
